@@ -21,7 +21,9 @@ More details on the addition of the Viewport can be found at the blog below.
 *Experience might be slightly different, but the same thinking and process applies to on-premises as well.
 
 ### Prerequisites ###
-The Web Essentials Extension for Visual Studio will need to be downloaded to allow for easy compilation of SCSS and JS download here - https://visualstudiogallery.msdn.microsoft.com/56633663-6799-41d7-9df7-0f2a504ca361
+The Web Essentials (2013)/Web Compiler (2015) Extension for Visual Studio will need to be downloaded to allow for easy compilation of SCSS and JS download options below
+VS 2013 - https://visualstudiogallery.msdn.microsoft.com/56633663-6799-41d7-9df7-0f2a504ca361
+VS 2015 - https://visualstudiogallery.msdn.microsoft.com/3b329021-cd7a-4a01-86fc-714c2d05bb6c
 To add valid viewport settings to the master page the site collection feature "SharePoint Server Publishing Infrastructure" needs to be activated. No other publishing related feature needs to be activated.
 Deactivation of the Mobile Browser View Feature is also recommended 
 
