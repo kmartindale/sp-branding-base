@@ -11,3 +11,15 @@ C:\Users\kmartindale\Documents\HelpfulCode\Branding.Base\Branding.Base\bin\Debug
 C:\Users\kmartindale\Documents\HelpfulCode\Branding.Base\Branding.Base\obj\Debug\Branding.Base.csprojResolveAssemblyReference.cache
 C:\Users\kmartindale\Documents\HelpfulCode\Branding.Base\Branding.Base\obj\Debug\Branding.Base.exe
 C:\Users\kmartindale\Documents\HelpfulCode\Branding.Base\Branding.Base\obj\Debug\Branding.Base.pdb
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Branding.Base.exe.config
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\obj\Debug\Branding.Base.exe
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\obj\Debug\Branding.Base.pdb
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Resources\js\main.min.js
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Resources\css\style.min.css
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Branding.Base.exe
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Branding.Base.pdb
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Microsoft.SharePoint.Client.Search.Applications.Portable.dll
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Microsoft.SharePoint.Client.WorkflowServices.dll
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Microsoft.SharePoint.Client.Runtime.Portable.dll
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\bin\Debug\Microsoft.SharePoint.Client.Portable.dll
+C:\Users\kmartindale\Documents\GitHub\sp-branding-base\Branding.Base\Branding.Base\obj\Debug\Branding.Base.csprojResolveAssemblyReference.cache

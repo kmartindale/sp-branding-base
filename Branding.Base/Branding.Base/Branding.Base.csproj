@@ -56,43 +56,49 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Resources\import.css.map">
+    <None Include="Resources\css\import.css.map">
       <DependentUpon>import.css</DependentUpon>
     </None>
-    <None Include="Resources\import.scss" />
-    <None Include="Resources\main.min.js.map">
+    <None Include="Resources\css\import.scss" />
+    <None Include="Resources\js\main.min.js.map">
       <DependentUpon>main.min.js</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\style.css.map">
+    <None Include="Resources\css\style.css.map">
       <DependentUpon>style.css</DependentUpon>
     </None>
-    <None Include="Resources\style.scss" />
-    <None Include="Resources\_fonts.scss" />
-    <None Include="Resources\_grid.scss" />
-    <None Include="Resources\_reset.scss" />
-    <None Include="Resources\_responsiveSP.scss" />
-    <None Include="Resources\_variables.scss" />
+    <None Include="Resources\css\style.scss" />
+    <None Include="Resources\css\_fonts.scss" />
+    <None Include="Resources\css\_grid.scss" />
+    <None Include="Resources\css\_reset.scss" />
+    <None Include="Resources\css\_responsiveSP.scss" />
+    <None Include="Resources\css\_variables.scss" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\import.css">
+    <Content Include="Resources\css\import.css">
       <DependentUpon>import.scss</DependentUpon>
     </Content>
-    <Content Include="Resources\import.min.css">
+    <Content Include="Resources\css\import.min.css">
       <DependentUpon>import.css</DependentUpon>
     </Content>
-    <Content Include="Resources\main.js" />
-    <Content Include="Resources\main.min.js">
+    <Content Include="Resources\js\jquery-3.1.0.min.js" />
+    <Content Include="Resources\js\main.js" />
+    <Content Include="Resources\js\main.min.js">
       <DependentUpon>main.js</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\style.css">
+    <Content Include="Resources\css\style.css">
       <DependentUpon>style.scss</DependentUpon>
     </Content>
-    <Content Include="Resources\style.min.css">
+    <Content Include="Resources\css\style.min.css">
       <DependentUpon>style.css</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\fonts\" />
+    <Folder Include="Resources\html\" />
+    <Folder Include="Resources\images\" />
+    <Folder Include="Resources\Theme\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

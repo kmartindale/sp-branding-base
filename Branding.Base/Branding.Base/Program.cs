@@ -27,6 +27,9 @@ namespace Branding.Base
             using (var ctx = new ClientContext(siteUrl))
             {
                 ctx.AuthenticationMode = ClientAuthenticationMode.Default;
+                //Uncomment for ONPrem 
+                //ctx.Credentials = new System.Net.NetworkCredential(userName, pwd);
+                //Uncomment for Online
                 ctx.Credentials = new SharePointOnlineCredentials(userName, pwd);
 
                 Web web = ctx.Web;
@@ -37,15 +40,20 @@ namespace Branding.Base
                 ctx.ExecuteQuery();
 
 
-                UploadAssetToHostWeb(web, "style.min.css");
-                UploadAssetToHostWeb(web, "main.min.js");
+                ProcessDirectory(web, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resources"));
 
-                AddScriptLink(ctx, "/SiteAssets/main.min.js", 9);
+                //Uncomment to add custom theme
+                //CreateThemeEntry(web, "Custom Theme", "ColorPalette.spcolor", "Font.spfont", null);
 
-                // Actual code for operations
-                // Set the properties accordingly
-                // Notice that these are new properties in 2014 April CU of 15 hive CSOM and July release of MSO CSOM
-                web.AlternateCssUrl = ctx.Web.ServerRelativeUrl + "SiteAssets/style.min.css";
+                AddScriptLink(ctx, "/SiteAssets/js/jquery-3.1.0.min.js", 7);
+                AddScriptLink(ctx, "/SiteAssets/js/main.min.js", 9);
+
+                //Uncomment to add custom Logo
+                //web.SiteLogoUrl = web.ServerRelativeUrl + "/SiteAssets/images/logo.png";
+                //RemoveCustomScript(ctx, web);
+
+                web.AlternateCssUrl = ctx.Web.ServerRelativeUrl + "/SiteAssets/css/style.min.css";
+
                 // Update settings at the site level.
                 web.Update();
                 web.Context.ExecuteQuery();
@@ -108,17 +116,45 @@ namespace Branding.Base
         /// Uploads assets to host web
         /// </summary>
         /// <param name="web"></param>
-        private static void UploadAssetToHostWeb(Web web, string fileName)
+        private static void UploadAssets(Web web, string filePath, string fileName, string fileLocation)
         {
-            // Ensure site asset library exists and return list
-            List assetLibrary = web.Lists.EnsureSiteAssetsLibrary();
-            web.Context.Load(assetLibrary, l => l.RootFolder);
+            List currentList;
+            Folder listFolder = null;
+            if (fileLocation != "Theme") //Put files in Site Assets
+            {
+                // Ensure site asset library exists and return list
+                currentList = web.Lists.EnsureSiteAssetsLibrary();
+                web.Context.Load(currentList, l => l.RootFolder);
+                listFolder = currentList.RootFolder;
+                if (!FolderExists(web, "Site Assets", fileLocation))
+                {
+                    CreateFolder(web, "Site Assets", fileLocation);
+                }
 
-            //Set up Resources Directory as our main Path
-            string fileFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resources/");
+            }
+            else //Put files in Theme Folder
+            {
+                currentList = web.GetCatalog(123);
+                // get the theme list
+                web.Context.Load(currentList);
+                web.Context.ExecuteQuery();
+                listFolder = currentList.RootFolder;
 
-            // Get the path to the file which we are about to deploy
-            string filePath = fileFolder + fileName;
+                //Change file folder to 15
+                fileLocation = "15";
+            }
+
+            web.Context.Load(listFolder);
+            web.Context.Load(listFolder.Folders);
+            web.Context.ExecuteQuery();
+            foreach (Folder folder in listFolder.Folders)
+            {
+                if (folder.Name == fileLocation)
+                {
+                    listFolder = folder;
+                    break;
+                }
+            }
 
             // Use CSOM to upload the file to Site Assests Library
             FileCreationInformation newFile = new FileCreationInformation
@@ -127,10 +163,65 @@ namespace Branding.Base
                 Url = fileName,
                 Overwrite = true
             };
-            Microsoft.SharePoint.Client.File uploadFile = assetLibrary.RootFolder.Files.Add(newFile);
+            Microsoft.SharePoint.Client.File uploadFile = listFolder.Files.Add(newFile);
             web.Context.Load(uploadFile);
             web.Context.ExecuteQuery();
 
+        }
+
+        private static void CreateThemeEntry(Web web, string themeName, string colorFilePath, string fontFilePath, string masterPageName)
+        {
+            // Let's get instance to the composite look gallery
+            List themesOverviewList = web.GetCatalog(124);
+            web.Context.Load(themesOverviewList);
+            web.Context.ExecuteQuery();
+            // Do not add duplicate, if the theme is already there
+            if (!ThemeEntryExists(web, themesOverviewList, themeName))
+            {
+                // if web information is not available, load it
+                if (!web.IsObjectPropertyInstantiated("ServerRelativeUrl"))
+                {
+                    web.Context.Load(web);
+                    web.Context.ExecuteQuery();
+                }
+                // Let's create new theme entry. Notice that theme selection is not available from 
+                //  UI in personal sites, so this is just for consistency sake
+                ListItemCreationInformation itemInfo = new ListItemCreationInformation();
+                Microsoft.SharePoint.Client.ListItem item = themesOverviewList.AddItem(itemInfo);
+                item["Name"] = themeName;
+                item["Title"] = themeName;
+                if (!string.IsNullOrEmpty(colorFilePath))
+                {
+                    item["ThemeUrl"] = URLCombine(web.ServerRelativeUrl, string.Format("/_catalogs/theme/15/{0}", System.IO.Path.GetFileName(colorFilePath)));
+                    colorFilePath = item["ThemeUrl"].ToString();
+                }
+
+                if (!string.IsNullOrEmpty(fontFilePath))
+                {
+                    item["FontSchemeUrl"] = URLCombine(web.ServerRelativeUrl, string.Format("/_catalogs/theme/15/{0}", System.IO.Path.GetFileName(fontFilePath)));
+                    fontFilePath = item["FontSchemeUrl"].ToString();
+                }
+                /*if (!string.IsNullOrEmpty(backGroundPath))
+                {
+                    item["ImageUrl"] = URLCombine(web.ServerRelativeUrl, string.Format("/_catalogs/theme/15/{0}", System.IO.Path.GetFileName(backGroundPath)));
+                }*/
+                // we use seattle master if anythign else is not set
+                if (string.IsNullOrEmpty(masterPageName))
+                {
+                    item["MasterPageUrl"] = URLCombine(web.ServerRelativeUrl, "/_catalogs/masterpage/seattle.master");
+                }
+                else
+                {
+                    item["MasterPageUrl"] = URLCombine(web.ServerRelativeUrl, string.Format("/_catalogs/masterpage/{0}", Path.GetFileName(masterPageName)));
+                }
+                masterPageName = item["MasterPageUrl"].ToString();
+
+                item["DisplayOrder"] = 11;
+                item.Update();
+                //Apply Theme
+                web.ApplyTheme(colorFilePath, fontFilePath, null, true);
+                web.Context.ExecuteQuery();
+            }
         }
 
         private static void AddScriptLink(ClientContext ctx, string file, int seq)
@@ -145,6 +236,28 @@ namespace Branding.Base
             ctx.ExecuteQuery();
 
             Console.WriteLine("ScriptLink Added : {0}", file);
+        }
+
+        private static void RemoveCustomScript(ClientContext ctx, Web web)
+        {
+            var existingActions = ctx.Site.UserCustomActions;
+
+            ctx.Load(existingActions);
+
+            ctx.ExecuteQuery();
+
+            var actions = existingActions.ToArray();
+
+            foreach (var action in actions)
+            {
+
+
+                action.DeleteObject();
+                ctx.Load(action);
+                ctx.ExecuteQuery();
+
+
+            }
         }
 
 
@@ -217,6 +330,105 @@ namespace Branding.Base
             return siteUrl;
         }
 
-    }
-}
+        private static bool ThemeEntryExists(Web web, List themeList, string themeName)
+        {
 
+            CamlQuery query = new CamlQuery();
+            string camlString = @"
+                <View>
+                    <Query>                
+                        <Where>
+                            <Eq>
+                                <FieldRef Name='Name' />
+                                <Value Type='Text'>{0}</Value>
+                            </Eq>
+                        </Where>
+                     </Query>
+                </View>";
+            // Let's update the theme name accordingly
+            camlString = string.Format(camlString, themeName);
+            query.ViewXml = camlString;
+            var found = themeList.GetItems(query);
+            web.Context.Load(found);
+            web.Context.ExecuteQuery();
+            if (found.Count > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static string URLCombine(string baseUrl, string relativeUrl)
+        {
+            if (baseUrl.Length == 0)
+                return relativeUrl;
+            if (relativeUrl.Length == 0)
+                return baseUrl;
+            return string.Format("{0}/{1}", baseUrl.TrimEnd(new char[] { '/', '\\' }), relativeUrl.TrimStart(new char[] { '/', '\\' }));
+        }
+
+        public static void ProcessDirectory(Web web, string targetDirectory)
+        {
+            // Process the list of files found in the directory. All files must be housed in a folder
+            string[] directoryEntries = Directory.GetDirectories(targetDirectory);
+            foreach (string directoryName in directoryEntries)
+            {
+                string[] fileEntries = Directory.GetFiles(directoryName);
+                foreach (string fileName in fileEntries)
+                {
+                    FileInfo fileInfo = new FileInfo(fileName);
+                    String fileLocation = fileInfo.Directory.Name;
+
+                    /*string fileExt = Path.GetFileName(fileName).ToString().Substring(Path.GetFileName(fileName).ToString().LastIndexOf(".") + 1);
+                    string fileLocation;
+                    switch (fileExt)
+                    {
+                        case "spcolor":
+                            fileLocation = "theme";
+                            break;
+                        case "spfont":
+                            fileLocation = "theme";
+                            break;
+                        default:
+                            fileLocation = "siteassets";
+                            break;
+                    }*/
+
+
+                    UploadAssets(web, fileName, Path.GetFileName(fileName).ToString(), fileLocation);
+
+                    // Recurse into subdirectories of this directory.
+                    string[] subdirectoryEntries = Directory.GetDirectories(directoryName);
+                    foreach (string subdirectory in subdirectoryEntries)
+                        ProcessDirectory(web, subdirectory);
+                }
+            }
+        }
+
+        private static void CreateFolder(Web web, string listTitle, string folderName)
+        {
+            var list = web.Lists.GetByTitle(listTitle);
+            var folderCreateInfo = new ListItemCreationInformation
+            {
+                UnderlyingObjectType = FileSystemObjectType.Folder,
+                LeafName = folderName
+            };
+            var folderItem = list.AddItem(folderCreateInfo);
+            folderItem.Update();
+            web.Context.ExecuteQuery();
+        }
+
+        public static bool FolderExists(Web web, string listTitle, string folderUrl)
+        {
+            var list = web.Lists.GetByTitle(listTitle);
+            var folders = list.GetItems(CamlQuery.CreateAllFoldersQuery());
+            web.Context.Load(list.RootFolder);
+            web.Context.Load(folders);
+            web.Context.ExecuteQuery();
+            var folderRelativeUrl = string.Format("{0}/{1}", list.RootFolder.ServerRelativeUrl, folderUrl);
+            var enumer = Enumerable.Any(folders, folderItem => (string)folderItem["FileRef"] == folderRelativeUrl);
+            return Enumerable.Any(folders, folderItem => (string)folderItem["FileRef"] == folderRelativeUrl);
+        }
+    }
+
+}
