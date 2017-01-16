@@ -60,18 +60,26 @@
       <DependentUpon>import.css</DependentUpon>
     </None>
     <None Include="Resources\css\import.scss" />
-    <None Include="Resources\js\main.min.js.map">
-      <DependentUpon>main.min.js</DependentUpon>
+    <None Include="Resources\fonts\lineto-replica-light.eot">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Resources\css\style.css.map">
       <DependentUpon>style.css</DependentUpon>
     </None>
     <None Include="Resources\css\style.scss" />
     <None Include="Resources\css\_fonts.scss" />
-    <None Include="Resources\css\_grid.scss" />
     <None Include="Resources\css\_reset.scss" />
     <None Include="Resources\css\_responsiveSP.scss" />
     <None Include="Resources\css\_variables.scss" />
+    <None Include="Resources\js\main.min.js.map">
+      <DependentUpon>main.min.js</DependentUpon>
+    </None>
+    <None Include="Resources\Theme\ColorPalette.spcolor">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\Theme\Font.spfont">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\css\import.css">
@@ -80,8 +88,12 @@
     <Content Include="Resources\css\import.min.css">
       <DependentUpon>import.css</DependentUpon>
     </Content>
-    <Content Include="Resources\js\jquery-3.1.0.min.js" />
-    <Content Include="Resources\js\main.js" />
+    <Content Include="Resources\js\jquery-3.1.0.min.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\js\main.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\js\main.min.js">
       <DependentUpon>main.js</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -95,10 +107,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\fonts\" />
     <Folder Include="Resources\html\" />
     <Folder Include="Resources\images\" />
-    <Folder Include="Resources\Theme\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

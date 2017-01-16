@@ -39,19 +39,20 @@ namespace Branding.Base
                 ctx.Load(allProperties);
                 ctx.ExecuteQuery();
 
-
                 ProcessDirectory(web, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resources"));
 
-                //Uncomment to add custom theme
-                //CreateThemeEntry(web, "Custom Theme", "ColorPalette.spcolor", "Font.spfont", null);
+                CreateThemeEntry(web, "Custom Theme", "ColorPalette.spcolor", "Font.spfont", null);
 
+
+                //This actually injects the JS Files
                 AddScriptLink(ctx, "/SiteAssets/js/jquery-3.1.0.min.js", 7);
                 AddScriptLink(ctx, "/SiteAssets/js/main.min.js", 9);
 
-                //Uncomment to add custom Logo
+                //Set up Custom Logo
                 //web.SiteLogoUrl = web.ServerRelativeUrl + "/SiteAssets/images/logo.png";
                 //RemoveCustomScript(ctx, web);
 
+                //Assign Alternate CSS
                 web.AlternateCssUrl = ctx.Web.ServerRelativeUrl + "/SiteAssets/css/style.min.css";
 
                 // Update settings at the site level.
@@ -81,54 +82,70 @@ namespace Branding.Base
                 web.Context.ExecuteQuery();
 
                 //// get features collection on web
-                /*
-                    FeatureCollection features = web.Features;
-                    web.Context.Load(features);
-                    web.Context.ExecuteQuery();
-                */
+                //FeatureCollection features = web.Features;
+                //web.Context.Load(features);
+                //web.Context.ExecuteQuery();
 
 
                 // disable the 'Mobile Browser View' web feature 
-                /*
-                    Guid featureId = new Guid("d95c97f3-e528-4da2-ae9f-32b3535fbb59");
-                    if (Enumerable.Any(features, feature => feature.DefinitionId == featureId))
-                    {
-                        features.Remove(new Guid("d95c97f3-e528-4da2-ae9f-32b3535fbb59"), false);
-                        web.Context.ExecuteQuery();
-                    }
-                */ 
+                //Guid featureId = new Guid("d95c97f3-e528-4da2-ae9f-32b3535fbb59");
+                //if (Enumerable.Any(features, feature => feature.DefinitionId == featureId))
+                //{
+                //    features.Remove(new Guid("d95c97f3-e528-4da2-ae9f-32b3535fbb59"), false);
+                //    web.Context.ExecuteQuery();
+                //} 
 
 
                 /// Uncomment to clear
                 // Removes alternate CSS URL
-                /*
-                    web.AlternateCssUrl = "";
-                    //Clear viewport meta tag form SEO settings
-                    allProperties["seoincludecustommetatagpropertyname"] = false.ToString();
-
-                    web.Update();
-                    web.Context.ExecuteQuery();
-                */
+                // web.AlternateCssUrl = "";
+                // Clear viewport meta tag form SEO settings
+                //if (allProperties.FieldValues.ContainsKey("seoincludecustommetatagpropertyname"))
+                //{
+                //    allProperties["seoincludecustommetatagpropertyname"] = false.ToString();
+                //}
+                // Add value of custom meta tag
+                //if (allProperties.FieldValues.ContainsKey("seocustommetatagpropertyname"))
+                //{
+                //    allProperties["seocustommetatagpropertyname"] = "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\" />";
+                //}
+                //web.Update();
+                //web.Context.ExecuteQuery();
             }
         }
 
         /// <summary>
-        /// Uploads assets to host web
+        /// Uploads assets to site assets web
         /// </summary>
         /// <param name="web"></param>
-        private static void UploadAssets(Web web, string filePath, string fileName, string fileLocation)
+        private static void UploadAssets(Web web, string filePath, string fileName, string fileLocation, string fileExt)
         {
             List currentList;
             Folder listFolder = null;
-            if (fileLocation != "Theme") //Put files in Site Assets
+            if (fileLocation == "siteassets") //Put files in Site Assets
             {
                 // Ensure site asset library exists and return list
                 currentList = web.Lists.EnsureSiteAssetsLibrary();
                 web.Context.Load(currentList, l => l.RootFolder);
                 listFolder = currentList.RootFolder;
-                if (!FolderExists(web, "Site Assets", fileLocation))
+                if (fileExt != "css" && fileExt != "js" && fileExt != "html")
                 {
-                    CreateFolder(web, "Site Assets", fileLocation);
+                    if (fileExt != "png")
+                    {
+                        fileExt = "fonts";
+                    }
+                    else if (fileExt == "png")
+                    {
+                        fileExt = "images";
+                    }
+                    else
+                    {
+                        fileExt = "aspx";
+                    }
+                }
+                if (!FolderExists(web, "Site Assets", fileExt))
+                {
+                    CreateFolder(web, "Site Assets", fileExt);
                 }
 
             }
@@ -140,8 +157,7 @@ namespace Branding.Base
                 web.Context.ExecuteQuery();
                 listFolder = currentList.RootFolder;
 
-                //Change file folder to 15
-                fileLocation = "15";
+                fileExt = "15";
             }
 
             web.Context.Load(listFolder);
@@ -149,7 +165,7 @@ namespace Branding.Base
             web.Context.ExecuteQuery();
             foreach (Folder folder in listFolder.Folders)
             {
-                if (folder.Name == fileLocation)
+                if (folder.Name == fileExt)
                 {
                     listFolder = folder;
                     break;
@@ -369,40 +385,33 @@ namespace Branding.Base
 
         public static void ProcessDirectory(Web web, string targetDirectory)
         {
-            // Process the list of files found in the directory. All files must be housed in a folder
-            string[] directoryEntries = Directory.GetDirectories(targetDirectory);
-            foreach (string directoryName in directoryEntries)
+            // Process the list of files found in the directory.
+            string[] fileEntries = Directory.GetFiles(targetDirectory);
+            foreach (string fileName in fileEntries)
             {
-                string[] fileEntries = Directory.GetFiles(directoryName);
-                foreach (string fileName in fileEntries)
+                string fileExt = Path.GetFileName(fileName).ToString().Substring(Path.GetFileName(fileName).ToString().LastIndexOf(".") + 1);
+                string fileLocation;
+                switch (fileExt)
                 {
-                    FileInfo fileInfo = new FileInfo(fileName);
-                    String fileLocation = fileInfo.Directory.Name;
-
-                    /*string fileExt = Path.GetFileName(fileName).ToString().Substring(Path.GetFileName(fileName).ToString().LastIndexOf(".") + 1);
-                    string fileLocation;
-                    switch (fileExt)
-                    {
-                        case "spcolor":
-                            fileLocation = "theme";
-                            break;
-                        case "spfont":
-                            fileLocation = "theme";
-                            break;
-                        default:
-                            fileLocation = "siteassets";
-                            break;
-                    }*/
-
-
-                    UploadAssets(web, fileName, Path.GetFileName(fileName).ToString(), fileLocation);
-
-                    // Recurse into subdirectories of this directory.
-                    string[] subdirectoryEntries = Directory.GetDirectories(directoryName);
-                    foreach (string subdirectory in subdirectoryEntries)
-                        ProcessDirectory(web, subdirectory);
+                    case "spcolor":
+                        fileLocation = "theme";
+                        break;
+                    case "spfont":
+                        fileLocation = "theme";
+                        break;
+                    default:
+                        fileLocation = "siteassets";
+                        break;
                 }
+
+
+                UploadAssets(web, fileName, Path.GetFileName(fileName).ToString(), fileLocation, fileExt);
             }
+
+            // Recurse into subdirectories of this directory.
+            string[] subdirectoryEntries = Directory.GetDirectories(targetDirectory);
+            foreach (string subdirectory in subdirectoryEntries)
+                ProcessDirectory(web, subdirectory);
         }
 
         private static void CreateFolder(Web web, string listTitle, string folderName)
@@ -432,3 +441,4 @@ namespace Branding.Base
     }
 
 }
+
